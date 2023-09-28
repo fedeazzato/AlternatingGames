@@ -51,6 +51,9 @@ class TicTacToe(AlternatingGame):
     def available_actions(self):
         return self.env._legal_moves()
 
+    def render(self):
+        self.env.render()
+        
     def eval(self, agent: AgentID) -> float:
         grid = self.observe(agent=agent)
         evalp = np.zeros(2)
