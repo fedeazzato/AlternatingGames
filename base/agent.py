@@ -11,4 +11,3 @@ class Agent():
 
     def policy(self):
         pass
-    

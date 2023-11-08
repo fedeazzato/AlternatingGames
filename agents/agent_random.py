@@ -8,8 +8,7 @@ class RandomAgent(Agent):
         super().__init__(game=game, agent=agent)
 
     def action(self):
-        return np.random.choice(self.game.available_actions())
+        return self.game.action_space(self.agent).sample()
     
     def policy(self):
-        raise ValueError('RandomAgent: Not implemented')
-    
+        return np.full(self.game.available_actions(), 1/self.game.available_actions())

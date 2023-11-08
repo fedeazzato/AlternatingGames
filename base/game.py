@@ -24,7 +24,7 @@ class AlternatingGame(AECEnv):
     def action_space(self, agent: AgentID):
         return self.action_spaces[agent]
 
-    def num_actions(self, agent: AgentID):
+    def num_actions(self, agent: AgentID) -> int:
         return self.action_space(agent).n
     
     def action_iter(self, agent: AgentID):
