@@ -115,8 +115,10 @@ class MonteCarloTreeSearch(Agent):
     def action_selection(self, node: MCTSNode) -> (ActionType, float):
         action: ActionType = None
         value: float = 0
-        # TODO
+
         # hint: return action of child with max value 
         # other alternatives could be considered
-        pass
-        return action, value    
+
+        child = max(node.children, key=lambda x: x.value)
+
+        return child.action, child.value    
