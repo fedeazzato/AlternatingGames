@@ -127,4 +127,5 @@ class MonteCarloTreeSearch(Agent):
         # other alternatives could be considered
 
         child = max(node.children, key=lambda x: x.value)
-        return child.action, child.value    
+        action, value = child.action, child.value
+        return action, value
