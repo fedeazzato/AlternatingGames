@@ -70,7 +70,6 @@ class CounterFactualRegret(Agent):
         node_agent = game.agent_selection
 
         # base cases
-        # TODO
 
         if game.terminated():
             return 0
