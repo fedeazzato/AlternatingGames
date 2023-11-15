@@ -10,7 +10,7 @@ class MCTSNode:
         self.parent = parent
         self.game = game
         self.action = action
-        self.children = []
+        self.children: list[MCTSNode] = []
         self.explored_children = 0
         self.visits = 0
         self.value = 0
@@ -127,5 +127,4 @@ class MonteCarloTreeSearch(Agent):
         # other alternatives could be considered
 
         child = max(node.children, key=lambda x: x.value)
-
         return child.action, child.value    
