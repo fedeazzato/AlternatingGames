@@ -46,7 +46,7 @@ class AlternatingGame(AECEnv):
     def terminated(self):
         return all([self.terminations[a] for a in self.agents])
     
-    def available_actions(self):
+    def available_actions(self) -> list[int]:
         pass
 
 
