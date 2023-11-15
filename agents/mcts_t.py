@@ -3,6 +3,7 @@ from base.agent import Agent
 from math import log, sqrt
 import numpy as np
 from typing import Callable
+import random
 
 class MCTSNode:
     def __init__(self, parent: 'MCTSNode', game: AlternatingGame, action: ActionType):
@@ -105,12 +106,18 @@ class MonteCarloTreeSearch(Agent):
                 pass
         return curr_node
 
-    def expand_node(self, node) -> None:
-        # TODO
+    def expand_node(self, node: MCTSNode) -> None:
         # if the game is not terminated: 
         #    play an available action in node
         #    create a new child node and add it to node children
-        pass
+
+        if not node.game.terminated():
+            for action in node.game.available_actions():
+                cloned_game = node.game.clone()
+                _, _, _ = cloned_game.step(action)
+                new_child = MCTSNode(parent=node, game=cloned_game, action=action)
+                node.children.append(new_child)
+            node.children = random.shuffle(node.children)
 
     def action_selection(self, node: MCTSNode) -> (ActionType, float):
         action: ActionType = None
