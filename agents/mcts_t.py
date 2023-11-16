@@ -85,13 +85,20 @@ class MonteCarloTreeSearch(Agent):
         # cumulate rewards and visits from node to root navigating backwards through parent
         pass
 
-    def rollout(self, node):
+    def rollout(self, node: MCTSNode):
         rewards = np.zeros(len(self.game.agents))
-        # TODO
         # implement rollout policy
-        # for i in range(self.rollouts): 
+        for _ in range(self.rollouts):
         #     play random game and record average rewards
-        return rewards
+            cloned_game = node.game.clone()
+            while not cloned_game.terminated():
+                action = cloned_game.action_space(cloned_game.agent_selection).sample()
+                cloned_game.step(action)
+
+            for agent in cloned_game.agents:
+                rewards[cloned_game.agent_name_mapping[agent]] += cloned_game.rewards(agent)
+
+        return rewards / self.rollouts
 
     def select_node(self, node: MCTSNode) -> MCTSNode:
         curr_node = node
@@ -114,7 +121,7 @@ class MonteCarloTreeSearch(Agent):
         if not node.game.terminated():
             for action in node.game.available_actions():
                 cloned_game = node.game.clone()
-                _, _, _ = cloned_game.step(action)
+                cloned_game.step(action)
                 new_child = MCTSNode(parent=node, game=cloned_game, action=action)
                 node.children.append(new_child)
             node.children = random.shuffle(node.children)
