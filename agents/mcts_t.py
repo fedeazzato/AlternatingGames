@@ -48,7 +48,7 @@ class MonteCarloTreeSearch(Agent):
 
         root = MCTSNode(parent=None, game=self.game, action=None)
 
-        for i in range(self.simulations):
+        for _ in range(self.simulations):
 
             node = root
             node.game = self.game.clone()
@@ -80,12 +80,15 @@ class MonteCarloTreeSearch(Agent):
 
         return action, value
 
-    def backprop(self, node, rewards):
-        # TODO
+    def backprop(self, node: MCTSNode, rewards: list[float]):
         # cumulate rewards and visits from node to root navigating backwards through parent
-        pass
+        while node:
+            node.visits += 1
+            node.cum_rewards += rewards
+            node.value = node.cum_rewards[node.game.agent_name_mapping[node.agent]] / node.visits
+            node = node.parent
 
-    def rollout(self, node: MCTSNode):
+    def rollout(self, node: MCTSNode) -> list[float]:
         rewards = np.zeros(len(self.game.agents))
         # implement rollout policy
         for _ in range(self.rollouts):
