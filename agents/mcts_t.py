@@ -102,9 +102,8 @@ class MonteCarloTreeSearch(Agent):
                 curr_node.explored_children += 1
                 curr_node = unvisited_child
             else:
-                # TODO
                 # set curr_node to a child using the selection function
-                pass
+                curr_node = self.selection(curr_node, self.agent)
         return curr_node
 
     def expand_node(self, node: MCTSNode) -> None:
