@@ -97,9 +97,10 @@ class MonteCarloTreeSearch(Agent):
         curr_node = node
         while curr_node.children:
             if curr_node.explored_children < len(curr_node.children):
-                # TODO
                 # set curr_node to an unvisited child
-                pass
+                unvisited_child = curr_node.children[curr_node.explored_children]
+                curr_node.explored_children += 1
+                curr_node = unvisited_child
             else:
                 # TODO
                 # set curr_node to a child using the selection function
