@@ -9,28 +9,44 @@ class Node():
         self.game = game
         self.agent = agent
         self.obs = obs
-        num_actions = self.game.num_actions(agent)
-        self.cumulative_regrets = np.zeros(num_actions)
-        self.learned_policy = np.zeros(game.num_actions(agent))
+        self.num_actions = self.game.num_actions(agent)
+        self.cumulative_regrets = np.zeros(self.num_actions)
+        self.curr_policy = self.uniform_policy()
+        self.sum_policy = self.uniform_policy()
+        self.learned_policy = self.uniform_policy()
+        self.agent_num = self.game.agent_name_mapping[self.agent]
 
-    def update(self, utility, node_utility, probability) -> None:
-        # Calculate regrets
-        regrets = np.zeros(self.game.num_actions(self.agent))
-        for a in self.game.action_iter(self.agent):
-            regrets[a] = (utility[a] - node_utility) * probability[self.game.agent_name_mapping[self.agent]]
+    def uniform_policy(self):
+        return np.ones(self.num_actions) / self.num_actions
 
-        # Update cumulative regrets
-        self.cumulative_regrets += regrets
+    def normalize_policy(self, non_normalized_policy):
+        return non_normalized_policy / np.sum(non_normalized_policy)
 
-        # Update policy
-        total_regret = np.sum(self.cumulative_regrets)
-        if total_regret > 0:
-            self.learned_policy = self.cumulative_regrets / total_regret
+    def update(self, utility, node_utility: int, probability) -> None:
+        # Calcular P_p
+        new_prob = probability.copy()
+        new_prob[self.agent_num] = 1
+        P_p = np.prod(new_prob)
+
+        # Calcular regrets
+        regrets = utility - node_utility
+
+        # Actualizar regrets acumulados
+        self.cumulative_regrets += (P_p * regrets)
+
+        # Caluclar Pp
+        Pp = probability[self.agent_num]
+        self.sum_policy += Pp * self.curr_policy
+        self.learned_policy = self.normalize_policy(self.sum_policy)
+
+        # Regret matching
+        positive_regrets = np.maximum(self.cumulative_regrets, 0)
+        if np.sum(positive_regrets) == 0:
+            self.curr_policy = self.uniform_policy()
         else:
-            num_actions = self.game.num_actions(self.agent)
-            self.learned_policy = np.ones(num_actions) / num_actions
+            self.curr_policy = self.normalize_policy(positive_regrets)
 
-    def policy(self):
+    def policy(self) -> ndarray[float]:
         return self.learned_policy
 
 class CounterFactualRegret(Agent):
@@ -51,13 +67,6 @@ class CounterFactualRegret(Agent):
         for _ in range(niter):
             self.cfr()
 
-    def policy(self):
-        try:
-            node = self.node_dict[self.game.observe(self.agent)]
-            return node.policy()
-        except:
-            raise ValueError('Train agent before calling action()')
-
     def cfr(self):
         game = self.game.clone()
         for agent in self.game.agents:
@@ -71,8 +80,8 @@ class CounterFactualRegret(Agent):
 
         # base cases
 
-        if game.terminated():
-            return 0
+        if game.done():
+            return game.reward(agent)
         
         # recursive call
 
@@ -88,19 +97,20 @@ class CounterFactualRegret(Agent):
 
         # compute expected (node) utility
         utility = np.zeros(game.num_actions(node_agent))
+        agent_num = game.agent_name_mapping[node_agent]
         for a in game.action_iter(node_agent):
             # update probability vector
-            # play the game
-            # call cfr recursively on updated game with new probability and update node utility
+            new_prob = probability.copy()
+            new_prob[agent_num] *= node.curr_policy[a]  # Probabilidad de ejecutar 'a'
 
+            # play the game
             new_game = game.clone()
             new_game.step(a)
-            new_prob = probability.copy()
-            new_prob[game.agent_name_mapping[node_agent]] = 1.0  # Probability of choosing a specific action
-            self.cfr_rec(new_game, agent, new_prob)
-            utility[a] = new_game.reward(agent)
 
-        node_utility = np.sum(utility * node.policy())
+            # call cfr recursively on updated game with new probability and update node utility
+            utility[a] = self.cfr_rec(new_game, agent, new_prob)
+
+        node_utility = np.sum(utility * node.curr_policy)
 
         # update node cumulative regrets using regret matching
         if node_agent == agent:
