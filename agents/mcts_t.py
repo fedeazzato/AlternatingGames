@@ -99,7 +99,7 @@ class MonteCarloTreeSearch(Agent):
                 cloned_game.step(action)
 
             for agent in cloned_game.agents:
-                rewards[cloned_game.agent_name_mapping[agent]] += cloned_game.rewards(agent)
+                rewards[cloned_game.agent_name_mapping[agent]] += cloned_game.reward(agent)
 
         return rewards / self.rollouts
 
@@ -127,7 +127,7 @@ class MonteCarloTreeSearch(Agent):
                 cloned_game.step(action)
                 new_child = MCTSNode(parent=node, game=cloned_game, action=action)
                 node.children.append(new_child)
-            node.children = random.shuffle(node.children)
+            random.shuffle(node.children)
 
     def action_selection(self, node: MCTSNode) -> (ActionType, float):
         action: ActionType = None
