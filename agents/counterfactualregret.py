@@ -117,4 +117,9 @@ class CounterFactualRegret(Agent):
             node.update(utility=utility, node_utility=node_utility, probability=probability)
 
         return node_utility
-        
+    
+    def policy(self):
+        agent_policy = {}
+        for n in sorted(self.node_dict.keys()):
+            agent_policy[n] = [self.node_dict[n].agent, self.node_dict[n].policy()]
+        return agent_policy
