@@ -95,7 +95,7 @@ class MonteCarloTreeSearch(Agent):
         #     play random game and record average rewards
             cloned_game = node.game.clone()
             while not cloned_game.terminated():
-                action = cloned_game.action_space(cloned_game.agent_selection).sample()
+                action = random.choice(cloned_game.available_actions())
                 cloned_game.step(action)
 
             for agent in cloned_game.agents:
